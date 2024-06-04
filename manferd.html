@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manferd Engineering Fuel Consumption</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        h1, h2 {
+            color: #00bfff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #444;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #1e1e1e;
+            color: #00bfff;
+        }
+        td {
+            background-color: #1c1c1c;
+        }
+        input[type="number"], input[type="text"] {
+            background-color: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            width: 80%;
+        }
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: #00bfff;
+            outline: none;
+        }
+        button {
+            background-color: #00bfff;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #009acd;
+        }
+        label {
+            font-size: 16px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function calculateTotals() {
+            let totalCost = 0;
+            let totalConsumption = 0;
+            let days = 31; // 31 days for each month
+
+            for (let i = 1; i <= days; i++) {
+                let cost = parseFloat(document.getElementById('cost' + i).value) || 0;
+                let consumption = parseFloat(document.getElementById('consumption' + i).value) || 0;
+                totalCost += cost;
+                totalConsumption += consumption;
+            }
+
+            let averageConsumption = totalConsumption / days;
+            document.getElementById('totalCost').innerText = totalCost.toFixed(2);
+            document.getElementById('averageConsumption').innerText = averageConsumption.toFixed(2);
+
+            let previousMonthCost = parseFloat(document.getElementById('previousMonthCost').value) || 0;
+            let costDifference = totalCost - previousMonthCost;
+            let costTrend = costDifference > 0 ? 'increased' : 'decreased';
+            document.getElementById('costTrend').innerText = costTrend;
+        }
+
+        function downloadData() {
+            let days = 31;
+            let data = "Day,Fuel Cost (LKR),Fuel Consumption,Reason for Consumption\n";
+
+            for (let i = 1; i <= days; i++) {
+                let cost = document.getElementById('cost' + i).value || 0;
+                let consumption = document.getElementById('consumption' + i).value || 0;
+                let reason = document.getElementById('reason' + i).value || '';
+                data += `${i},${cost},${consumption},${reason}\n`;
+            }
+
+            let previousMonthCost = document.getElementById('previousMonthCost').value || 0;
+            let monthName = document.getElementById('monthName').value || 'Month';
+            data = `Month: ${monthName}\n\n` + data;
+            data += `\nPrevious Month Total Cost (LKR),${previousMonthCost}\n`;
+
+            let blob = new Blob([data], { type: 'text/csv' });
+            let url = window.URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'fuel_consumption_data.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</head>
+<body>
+    <h1>Manferd Engineering Fuel Consumption</h1>
+    <label for="monthName">Month: </label>
+    <input type="text" id="monthName">
+    <br><br>
+    <table>
+        <tr>
+            <th>Day</th>
+            <th>Fuel Cost (LKR)</th>
+            <th>Fuel Consumption</th>
+            <th>Reason for Consumption</th>
+        </tr>
+        <!-- Generate rows for each day of the month -->
+        <script>
+            for (let i = 1; i <= 31; i++) {
+                document.write('<tr>');
+                document.write('<td>' + i + '</td>');
+                document.write('<td><input type="number" id="cost' + i + '" step="0.01"></td>');
+                document.write('<td><input type="number" id="consumption' + i + '" step="0.01"></td>');
+                document.write('<td><input type="text" id="reason' + i + '"></td>');
+                document.write('</tr>');
+            }
+        </script>
+    </table>
+    <br>
+    <label for="previousMonthCost">Previous Month Total Cost (LKR): </label>
+    <input type="number" id="previousMonthCost" step="0.01">
+    <br><br>
+    <button onclick="calculateTotals()">Calculate Totals</button>
+    <button onclick="downloadData()">Download Data</button>
+    <div id="results">
+        <h2>Results</h2>
+        <p>Total Cost for the Month: LKR <span id="totalCost">0.00</span></p>
+        <p>Average Fuel Consumption per Day: <span id="averageConsumption">0.00</span> liters</p>
+        <p>The cost has <span id="costTrend">neither increased nor decreased</span> compared to the previous month.</p>
+    </div>
+</body>
+</html>
+
